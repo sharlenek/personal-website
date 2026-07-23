@@ -9,6 +9,8 @@
   --mono: 'Cascadia Code', ui-monospace, Consolas, monospace;
   --display: 'Cossette Titre', var(--mono);
 
+  --fluid: clamp(1rem, 0.75rem + 1vw, 1.75rem);
+
   font: 18px/145% var(--sans);
   color-scheme: light;
   color: var(--text);
