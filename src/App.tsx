@@ -13,7 +13,7 @@ const socials = [
   },
   {
     name: 'GitHub',
-    href: 'https://github.com/sharlenekho',
+    href: 'https://github.com/sharlenek',
     bg: '#171515',
     icon: (
       <svg viewBox="0 0 19 19" width="26" height="26" fill="#fff">
@@ -47,11 +47,11 @@ function App() {
       <div id="top-border" />
 
       <nav id="nav">
-        <span>about me</span>
+        <span className="nav-link">about me</span>
         <span className="sep">|</span>
-        <span>projects</span>
+        <span className="nav-link">projects</span>
         <span className="sep">|</span>
-        <span>resume</span>
+        <span className="nav-link">resume</span>
       </nav>
 
       <main id="hero">

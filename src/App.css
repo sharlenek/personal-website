@@ -97,6 +97,32 @@
   }
 }
 
+.nav-link {
+  position: relative;
+  cursor: pointer;
+  display: inline-block;
+  transition: transform 0.2s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 100%;
+    bottom: -2px;
+    height: 2px;
+    background: var(--accent);
+    transition: right 0.2s ease;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+
+    &::after {
+      right: 0;
+    }
+  }
+}
+
 #hero {
   flex: 1;
   display: flex;
@@ -110,7 +136,7 @@
 
 .greeting {
   font-family: var(--sans);
-  font-size: clamp(18px, 2.4vw, 28px);
+  font-size: calc(var(--fluid) * 1);
   margin-bottom: 0.9em;
   color: var(--text-h);
 }
@@ -118,7 +144,7 @@
 .name {
   font-family: var(--display);
   font-weight: 400;
-  font-size: clamp(28px, 5vw, 64px);
+  font-size: calc(var(--fluid) * 2.29);
   letter-spacing: -0.02em;
   color: var(--text-h);
   white-space: nowrap;
@@ -126,14 +152,14 @@
 
 .tagline {
   font-family: var(--sans);
-  font-size: clamp(15px, 1.8vw, 20px);
+  font-size: calc(var(--fluid) * 0.72);
   color: var(--text);
   margin-top: 1.5em;
 }
 
 #social-rail {
   position: fixed;
-  right: clamp(16px, 4vw, 48px);
+  right: calc(var(--fluid) * 1.71);
   top: 50%;
   transform: translateY(-50%);
   display: flex;
