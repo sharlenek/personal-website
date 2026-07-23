@@ -1,3 +1,5 @@
+import sharkUp from './assets/sharkup.png'
+import sharkDown from './assets/sharkdown.png'
 import './App.css'
 
 const socials = [
@@ -55,6 +57,15 @@ function App() {
       </nav>
 
       <main id="hero">
+        <div
+          className="shark"
+          style={
+            {
+              '--frame-a': `url(${sharkUp})`,
+              '--frame-b': `url(${sharkDown})`,
+            } as React.CSSProperties
+          }
+        />
         <p className="greeting">hi, i&rsquo;m</p>
         <h1 className="name">[sharlene kho]</h1>
         <p className="tagline">cs @ uf, backend software engineer</p>
