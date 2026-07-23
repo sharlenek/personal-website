@@ -1,0 +1,51 @@
+:root {
+  --text: #000;
+  --text-h: #000;
+  --bg: #fff;
+  --border: #e5e4e7;
+  --accent: #3b82f6;
+
+  --sans: 'DM Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: 'Cascadia Code', ui-monospace, Consolas, monospace;
+  --display: 'Cossette Titre', var(--mono);
+
+  font: 18px/145% var(--sans);
+  color-scheme: light;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  @media (max-width: 1024px) {
+    font-size: 16px;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: pan-x pan-y;
+}
+
+#root {
+  height: 100dvh;
+  width: 100%;
+  color: var(--text-h);
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
