@@ -29,6 +29,18 @@
   }
 }
 
+/* Page exit: everything in the outgoing <main> lifts and fades together. */
+@keyframes fade-slide-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-28px);
+  }
+}
+
 @keyframes fade-slide-left {
   from {
     opacity: 0;
@@ -40,87 +52,114 @@
   }
 }
 
+/* The sprite faces left at scaleX(1), so the rotate angles below are the path
+   tangent measured for the sprite's own frame: while unmirrored the snout is at
+   180deg + rotate, and while mirrored (scaleX(-1), which is applied after the
+   rotate) it is at -rotate. Angles account for the squashed ellipse
+   (ry = 0.8 * rx), so the tangent is steeper than a plain circle's. */
 @keyframes shark-enter {
   from {
     opacity: 0;
-    transform: translate(-50%, -50%) translate(var(--shark-rx), calc(var(--shark-ry) * -1 + 24px))
-      scaleX(1);
+    transform: translate(-50%, -50%) translate(0, calc(var(--shark-ry) + 24px)) scaleX(-1)
+      rotate(0deg);
   }
   to {
     opacity: 1;
-    transform: translate(-50%, -50%) translate(var(--shark-rx), 0) scaleX(1);
+    transform: translate(-50%, -50%) translate(0, var(--shark-ry)) scaleX(-1) rotate(0deg);
   }
 }
 
 @keyframes shark-orbit {
+  /* bottom of the ellipse, swimming right: level */
   0% {
-    transform: translate(-50%, -50%) translate(var(--shark-rx), 0) scaleX(1);
+    transform: translate(-50%, -50%) translate(0, var(--shark-ry)) scaleX(-1) rotate(0deg);
   }
   6.25% {
     transform: translate(-50%, -50%)
-      translate(calc(var(--shark-rx) * 0.883), calc(var(--shark-ry) * -0.47)) scaleX(1);
+      translate(calc(var(--shark-rx) * 0.35), calc(var(--shark-ry) * 0.937)) scaleX(-1)
+      rotate(16.6deg);
   }
   12.5% {
     transform: translate(-50%, -50%)
-      translate(calc(var(--shark-rx) * 0.627), calc(var(--shark-ry) * -0.779)) scaleX(1);
+      translate(calc(var(--shark-rx) * 0.668), calc(var(--shark-ry) * 0.744)) scaleX(-1)
+      rotate(35.7deg);
   }
   18.75% {
     transform: translate(-50%, -50%)
-      translate(calc(var(--shark-rx) * 0.319), calc(var(--shark-ry) * -0.948)) scaleX(1);
+      translate(calc(var(--shark-rx) * 0.907), calc(var(--shark-ry) * 0.421)) scaleX(-1)
+      rotate(59.9deg);
   }
+  /* right side, swimming up: snout up */
+  24.9% {
+    transform: translate(-50%, -50%) translate(var(--shark-rx), 0) scaleX(-1) rotate(90deg);
+  }
+  /* mirror flip, same snout-up heading */
   25% {
-    transform: translate(-50%, -50%) translate(0, calc(var(--shark-ry) * -1)) scaleX(1);
+    transform: translate(-50%, -50%) translate(var(--shark-rx), 0) scaleX(1) rotate(90deg);
   }
   31.25% {
     transform: translate(-50%, -50%)
-      translate(calc(var(--shark-rx) * -0.319), calc(var(--shark-ry) * -0.948)) scaleX(1);
+      translate(calc(var(--shark-rx) * 0.907), calc(var(--shark-ry) * -0.421)) scaleX(1)
+      rotate(59.9deg);
   }
   37.5% {
     transform: translate(-50%, -50%)
-      translate(calc(var(--shark-rx) * -0.627), calc(var(--shark-ry) * -0.779)) scaleX(1);
+      translate(calc(var(--shark-rx) * 0.668), calc(var(--shark-ry) * -0.744)) scaleX(1)
+      rotate(35.7deg);
   }
   43.75% {
     transform: translate(-50%, -50%)
-      translate(calc(var(--shark-rx) * -0.883), calc(var(--shark-ry) * -0.47)) scaleX(1);
+      translate(calc(var(--shark-rx) * 0.35), calc(var(--shark-ry) * -0.937)) scaleX(1)
+      rotate(16.6deg);
   }
-  49.9% {
-    transform: translate(-50%, -50%) translate(calc(var(--shark-rx) * -1), 0) scaleX(1);
-  }
+  /* top of the ellipse, swimming left: level */
   50% {
-    transform: translate(-50%, -50%) translate(calc(var(--shark-rx) * -1), 0) scaleX(-1);
+    transform: translate(-50%, -50%) translate(0, calc(var(--shark-ry) * -1)) scaleX(1)
+      rotate(0deg);
   }
   56.25% {
     transform: translate(-50%, -50%)
-      translate(calc(var(--shark-rx) * -0.883), calc(var(--shark-ry) * 0.47)) scaleX(-1);
+      translate(calc(var(--shark-rx) * -0.35), calc(var(--shark-ry) * -0.937)) scaleX(1)
+      rotate(-16.6deg);
   }
   62.5% {
     transform: translate(-50%, -50%)
-      translate(calc(var(--shark-rx) * -0.627), calc(var(--shark-ry) * 0.779)) scaleX(-1);
+      translate(calc(var(--shark-rx) * -0.668), calc(var(--shark-ry) * -0.744)) scaleX(1)
+      rotate(-35.7deg);
   }
   68.75% {
     transform: translate(-50%, -50%)
-      translate(calc(var(--shark-rx) * -0.319), calc(var(--shark-ry) * 0.948)) scaleX(-1);
+      translate(calc(var(--shark-rx) * -0.907), calc(var(--shark-ry) * -0.421)) scaleX(1)
+      rotate(-59.9deg);
   }
+  /* left side, swimming down: snout down */
+  74.9% {
+    transform: translate(-50%, -50%) translate(calc(var(--shark-rx) * -1), 0) scaleX(1)
+      rotate(-90deg);
+  }
+  /* mirror flip, same snout-down heading */
   75% {
-    transform: translate(-50%, -50%) translate(0, var(--shark-ry)) scaleX(-1);
+    transform: translate(-50%, -50%) translate(calc(var(--shark-rx) * -1), 0) scaleX(-1)
+      rotate(-90deg);
   }
   81.25% {
     transform: translate(-50%, -50%)
-      translate(calc(var(--shark-rx) * 0.319), calc(var(--shark-ry) * 0.948)) scaleX(-1);
+      translate(calc(var(--shark-rx) * -0.907), calc(var(--shark-ry) * 0.421)) scaleX(-1)
+      rotate(-59.9deg);
   }
   87.5% {
     transform: translate(-50%, -50%)
-      translate(calc(var(--shark-rx) * 0.627), calc(var(--shark-ry) * 0.779)) scaleX(-1);
+      translate(calc(var(--shark-rx) * -0.668), calc(var(--shark-ry) * 0.744)) scaleX(-1)
+      rotate(-35.7deg);
   }
   93.75% {
     transform: translate(-50%, -50%)
-      translate(calc(var(--shark-rx) * 0.883), calc(var(--shark-ry) * 0.47)) scaleX(-1);
+      translate(calc(var(--shark-rx) * -0.35), calc(var(--shark-ry) * 0.937)) scaleX(-1)
+      rotate(-16.6deg);
   }
-  99.9% {
-    transform: translate(-50%, -50%) translate(var(--shark-rx), 0) scaleX(-1);
-  }
+  /* back at the bottom, swimming right: level */
   100% {
-    transform: translate(-50%, -50%) translate(var(--shark-rx), 0) scaleX(1);
+    transform: translate(-50%, -50%) translate(0, var(--shark-ry)) scaleX(-1) rotate(0deg);
   }
 }
 
@@ -136,6 +175,35 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
+  #hero.leaving,
+  #about.leaving {
+    animation: fade-slide-out 0.45s ease-in both;
+    pointer-events: none;
+  }
+
+  .about-title,
+  .about-body,
+  .about-photo {
+    animation-duration: 0.9s;
+    animation-timing-function: ease-out;
+    animation-fill-mode: both;
+  }
+
+  .about-title {
+    animation-name: fade-slide-up;
+    animation-delay: 0.1s;
+  }
+
+  .about-body {
+    animation-name: fade-slide-up;
+    animation-delay: 0.3s;
+  }
+
+  .about-photo {
+    animation-name: fade-slide-up;
+    animation-delay: 0.2s;
+  }
+
   #nav,
   .name,
   .greeting,
@@ -174,7 +242,7 @@
   .shark {
     animation:
       shark-enter 0.9s ease-out 1s both,
-      shark-orbit 40s linear 1.9s infinite,
+      shark-orbit 60s linear 1.9s infinite,
       shark-swim 4.5s steps(1, end) 1.9s infinite;
   }
 }
@@ -223,6 +291,10 @@
       right: 0;
     }
   }
+
+  &.is-active::after {
+    right: 0;
+  }
 }
 
 #hero {
@@ -267,9 +339,18 @@
   margin-top: 1.5em;
 }
 
+/* Gives the shark the same box #hero used to provide, so the orbit geometry is
+   unchanged while the page exit transform is applied to the ancestor. */
+.shark-field {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
 .shark {
   --shark-rx: clamp(140px, 24vw, 380px);
-  --shark-ry: calc(var(--shark-rx) * 0.625);
+  --shark-ry: calc(var(--shark-rx) * 0.67);
   position: absolute;
   top: 50%;
   left: 50%;
@@ -281,8 +362,87 @@
   background-repeat: no-repeat;
   background-position: center;
   opacity: 1;
-  transform: translate(-50%, -50%) translate(var(--shark-rx), 0);
+  transform: translate(-50%, -50%) translate(0, var(--shark-ry)) scaleX(-1) rotate(0deg);
   pointer-events: none;
+}
+
+#about {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(28px, 5vw, 72px);
+  padding: 0 calc(var(--fluid) * 4) calc(var(--fluid) * 2) calc(var(--fluid) * 2.5);
+}
+
+.about-photo {
+  width: clamp(180px, 22vw, 320px);
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 14px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.14);
+  flex-shrink: 0;
+}
+
+.about-copy {
+  max-width: 46ch;
+}
+
+.about-title {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: calc(var(--fluid) * 1.72);
+  letter-spacing: -0.02em;
+  color: var(--text-h);
+  margin-bottom: 0.6em;
+}
+
+.about-body {
+  font-family: var(--sans);
+  font-size: calc(var(--fluid) * 0.72);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+/* Narrow screens: stack the photo over the copy and center the whole column on
+   the viewport. Padding stays symmetric so the stack sits centered even while
+   the social rail is still floating over the right edge (it only goes static
+   below 640px). Short viewports (landscape phones) keep the side-by-side row,
+   which is the only layout that fits in ~400px of height. */
+@media (max-width: 900px) and (min-height: 560px) {
+  #about {
+    flex-direction: column;
+    /* `safe` keeps the top of the column reachable instead of clipping it when
+       the content is taller than the viewport. */
+    justify-content: safe center;
+    align-items: center;
+    gap: clamp(16px, 3vh, 28px);
+    padding: clamp(8px, 2vh, 24px) calc(var(--fluid) * 3.6);
+    overflow-y: auto;
+    text-align: center;
+  }
+
+  .about-photo {
+    width: clamp(140px, 34vw, 220px);
+  }
+
+  .about-copy {
+    width: 100%;
+  }
+
+  .about-body {
+    text-align: left;
+  }
+}
+
+@media (max-width: 640px) {
+  #about {
+    padding-left: calc(var(--fluid) * 1.4);
+    padding-right: calc(var(--fluid) * 1.4);
+  }
 }
 
 #social-rail {
@@ -296,9 +456,13 @@
 }
 
 .social-badge {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  /* Single knob for the rail: the corner radius and the icons (sized in em)
+     both scale off this. */
+  --badge: 48px;
+  width: var(--badge);
+  height: var(--badge);
+  border-radius: calc(var(--badge) * 0.25);
+  font-size: calc(var(--badge) * 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
