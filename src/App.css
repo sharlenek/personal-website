@@ -297,6 +297,25 @@
   }
 }
 
+.resume-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+}
+
+.download-icon {
+  width: 0.85em;
+  height: 0.85em;
+  transition: transform 0.2s ease;
+}
+
+.resume-link:hover .download-icon {
+  transform: translateY(2px);
+}
+
 #hero {
   position: relative;
   flex: 1;
@@ -363,6 +382,21 @@
   background-position: center;
   opacity: 1;
   transform: translate(-50%, -50%) translate(0, var(--shark-ry)) scaleX(-1) rotate(0deg);
+  pointer-events: none;
+}
+
+/* Forces the browser to fetch --frame-b on first paint. Without this it isn't
+   requested until shark-swim first swaps to it, leaving the shark blank while
+   it downloads. opacity: 0 (not display: none) so the paint actually happens. */
+.shark::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--frame-b);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0;
   pointer-events: none;
 }
 

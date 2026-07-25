@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import sharkUp from './assets/sharkup.png'
-import sharkDown from './assets/sharkdown.png'
+import sharkUp from './assets/sharkup.webp'
+import sharkDown from './assets/sharkdown.webp'
 import headshot from './assets/sharlene_headshot_compressed.jpg'
 import './App.css'
 
@@ -90,9 +90,27 @@ function App() {
           about me
         </span>
         <span className="sep">|</span>
-        <span className="nav-link">projects</span>
-        <span className="sep">|</span>
-        <span className="nav-link">resume</span>
+        <a
+          className="nav-link resume-link"
+          href="/Sharlene_Kho_Resume.pdf"
+          download="sharlene-kho-resume.pdf"
+        >
+          resume
+          <svg
+            className="download-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M12 3v12" />
+            <path d="M7 11l5 5 5-5" />
+            <path d="M4 20h16" />
+          </svg>
+        </a>
       </nav>
 
       {shown === 'home' ? (
