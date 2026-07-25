@@ -58,7 +58,115 @@ const CV_QUERY = '(min-width: 901px) and (hover: hover)'
    Low enough that each update is a visible jump, not a smooth follow. */
 const DETECT_MS = 60
 
+/* Glide-home tuning: ms per pixel of drag distance, clamped to this range. */
+const GLIDE_PER_PX = 5
+const GLIDE_MS: [number, number] = [900, 2600]
+
 type Box = { x: number; y: number; w: number; h: number }
+
+/* Lets the shark be picked up and thrown around, then eased back onto its
+   orbit. The drag offset is applied to a carrier element wrapping the shark
+   rather than to the shark itself: the orbit lives in a CSS animation, and an
+   animated transform always beats an inline one, so the two would fight. As a
+   carrier translation the offset simply composes on top, which also means the
+   stop-motion swim and the orbit keyframes are left completely untouched. */
+function useSharkDrag(
+  sharkRef: React.RefObject<HTMLDivElement | null>,
+  carrierRef: React.RefObject<HTMLDivElement | null>,
+  // The shark unmounts on the about page, so the listeners have to be rebound
+  // against the new element on the way back to home.
+  enabled: boolean,
+) {
+  useEffect(() => {
+    const shark = sharkRef.current
+    const carrier = carrierRef.current
+    if (!enabled || !shark || !carrier) return
+
+    let dragging = false
+    let pointerId = -1
+    let originX = 0
+    let originY = 0
+    let dx = 0
+    let dy = 0
+    let glide = 0
+
+    // Only the orbit pauses while held — the swim keeps flapping, so the shark
+    // stays alive in your hand.
+    const orbit = () =>
+      shark.getAnimations().find((a) => (a as CSSAnimation).animationName === 'shark-orbit')
+
+    const offset = (x: number, y: number) => {
+      carrier.style.transform = x || y ? `translate3d(${x}px, ${y}px, 0)` : ''
+    }
+
+    const onDown = (e: PointerEvent) => {
+      if (dragging) return
+      dragging = true
+      pointerId = e.pointerId
+      // Measured against the current offset, so grabbing mid-glide picks up
+      // from where it is instead of snapping.
+      originX = e.clientX - dx
+      originY = e.clientY - dy
+      cancelAnimationFrame(glide)
+      shark.setPointerCapture(e.pointerId)
+      shark.classList.add('is-held')
+      orbit()?.pause()
+      e.preventDefault()
+    }
+
+    const onMove = (e: PointerEvent) => {
+      if (!dragging || e.pointerId !== pointerId) return
+      dx = e.clientX - originX
+      dy = e.clientY - originY
+      offset(dx, dy)
+    }
+
+    const onUp = (e: PointerEvent) => {
+      if (!dragging || e.pointerId !== pointerId) return
+      dragging = false
+      pointerId = -1
+      shark.classList.remove('is-held')
+      // Resumed now, not after the glide: the shark swims on along the ellipse
+      // while the offset decays, so it slides back into its lane rather than
+      // waiting to be put down.
+      orbit()?.play()
+
+      const fromX = dx
+      const fromY = dy
+      const dist = Math.hypot(fromX, fromY)
+      if (dist < 1 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        dx = 0
+        dy = 0
+        offset(0, 0)
+        return
+      }
+
+      const dur = Math.min(GLIDE_MS[1], Math.max(GLIDE_MS[0], dist * GLIDE_PER_PX))
+      const start = performance.now()
+      const step = (now: number) => {
+        const p = Math.min(1, (now - start) / dur)
+        const ease = 1 - Math.pow(1 - p, 3)
+        dx = fromX * (1 - ease)
+        dy = fromY * (1 - ease)
+        offset(dx, dy)
+        if (p < 1) glide = requestAnimationFrame(step)
+      }
+      glide = requestAnimationFrame(step)
+    }
+
+    shark.addEventListener('pointerdown', onDown)
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+    window.addEventListener('pointercancel', onUp)
+    return () => {
+      cancelAnimationFrame(glide)
+      shark.removeEventListener('pointerdown', onDown)
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', onUp)
+    }
+  }, [sharkRef, carrierRef, enabled])
+}
 
 /* Where the segment from the box's center toward (tx, ty) crosses its edge. */
 function edgePoint(b: Box, tx: number, ty: number): [number, number] {
@@ -217,6 +325,7 @@ function App() {
   // The page currently animating out, if any. Null while a page is at rest.
   const [leaving, setLeaving] = useState<Page | null>(null)
   const sharkRef = useRef<HTMLDivElement>(null)
+  const carrierRef = useRef<HTMLDivElement>(null)
 
   const go = (to: Page) => {
     if (to === page || leaving) return
@@ -233,6 +342,8 @@ function App() {
   }
 
   const shown = leaving ?? page
+
+  useSharkDrag(sharkRef, carrierRef, shown === 'home')
 
   return (
     <div id="page">
@@ -279,16 +390,18 @@ function App() {
       {shown === 'home' ? (
         <main id="hero" className={leaving ? 'leaving' : undefined}>
           <div className="shark-field">
-            <div
-              className="shark"
-              ref={sharkRef}
-              style={
-                {
-                  '--frame-a': `url(${sharkUp})`,
-                  '--frame-b': `url(${sharkDown})`,
-                } as React.CSSProperties
-              }
-            />
+            <div className="shark-carrier" ref={carrierRef}>
+              <div
+                className="shark"
+                ref={sharkRef}
+                style={
+                  {
+                    '--frame-a': `url(${sharkUp})`,
+                    '--frame-b': `url(${sharkDown})`,
+                  } as React.CSSProperties
+                }
+              />
+            </div>
           </div>
           <p className="greeting">hi, i&rsquo;m</p>
           <CvTracker sharkRef={sharkRef} />

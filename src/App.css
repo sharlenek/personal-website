@@ -367,6 +367,14 @@
   pointer-events: none;
 }
 
+/* Carries the drag offset. Matches .shark-field's box exactly so the shark's
+   50%/50% anchor and the orbit radii resolve against the same rectangle they
+   did before the wrapper existed. */
+.shark-carrier {
+  position: absolute;
+  inset: 0;
+}
+
 .shark {
   --shark-rx: clamp(140px, 24vw, 380px);
   --shark-ry: calc(var(--shark-rx) * 0.67);
@@ -382,7 +390,15 @@
   background-position: center;
   opacity: 1;
   transform: translate(-50%, -50%) translate(0, var(--shark-ry)) scaleX(-1) rotate(0deg);
-  pointer-events: none;
+  /* The field stays click-through; only the shark itself is grabbable. */
+  pointer-events: auto;
+  cursor: grab;
+  /* Lets a touch drag the shark instead of panning the page. */
+  touch-action: none;
+
+  &.is-held {
+    cursor: grabbing;
+  }
 }
 
 /* Forces the browser to fetch --frame-b on first paint. Without this it isn't
