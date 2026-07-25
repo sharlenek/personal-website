@@ -459,8 +459,6 @@ function App() {
 
   return (
     <div id="page">
-      <div id="top-border" />
-
       <nav id="nav">
         <span
           className={`nav-link ${page === 'home' ? ' is-active' : ''}`}

@@ -247,13 +247,6 @@
   }
 }
 
-#top-border {
-  height: 5px;
-  width: 100%;
-  background: var(--accent);
-  flex-shrink: 0;
-}
-
 #nav {
   padding: calc(var(--fluid) * 1.14) calc(var(--fluid) * 1.43);
   font-family: var(--mono);
