@@ -183,6 +183,66 @@ function useSharkDrag(
   }, [sharkRef, carrierRef, enabled])
 }
 
+/* Mobile only: the orbit is dropped and the shark just parks. Kept in sync with
+   the .shark media query in App.css. */
+const MOBILE_QUERY = '(max-width: 640px)'
+
+/* Parks the shark halfway between the bottom of the tagline and the top of the
+   social row. Neither edge is reachable in CSS from inside the shark's
+   absolutely positioned field, so the midpoint is measured and handed back as a
+   custom property the media query reads for `top`.
+
+   Everything is read from offsetTop/offsetHeight rather than client rects: the
+   tagline and the rail both fade in under a translate, and offsets ignore
+   transforms, so the measurement is the settled layout even mid-animation. */
+function useParkedShark(
+  sharkRef: React.RefObject<HTMLDivElement | null>,
+  taglineRef: React.RefObject<HTMLParagraphElement | null>,
+  railRef: React.RefObject<HTMLElement | null>,
+  enabled: boolean,
+) {
+  useEffect(() => {
+    const shark = sharkRef.current
+    const tagline = taglineRef.current
+    const rail = railRef.current
+    if (!enabled || !shark || !tagline || !rail) return
+
+    // #hero, which is both the tagline's offset parent and the box the shark's
+    // field spans.
+    const hero = tagline.offsetParent as HTMLElement | null
+    if (!hero) return
+
+    const mq = window.matchMedia(MOBILE_QUERY)
+
+    const measure = () => {
+      // On desktop the shark orbits and `top` comes from the stylesheet.
+      if (!mq.matches) {
+        shark.style.removeProperty('--shark-parked-y')
+        return
+      }
+      const taglineBottom = tagline.offsetTop + tagline.offsetHeight
+      // The rail is static at this width, so it shares #page as its offset
+      // parent with the hero.
+      const railTop = rail.offsetTop - hero.offsetTop
+      shark.style.setProperty('--shark-parked-y', `${(taglineBottom + railTop) / 2}px`)
+    }
+
+    measure()
+
+    // Covers viewport resizes and rotation (the hero owns the leftover height),
+    // plus late reflows such as a font swap changing the tagline's height.
+    const ro = new ResizeObserver(measure)
+    ro.observe(hero)
+    ro.observe(tagline)
+    ro.observe(rail)
+    mq.addEventListener('change', measure)
+    return () => {
+      ro.disconnect()
+      mq.removeEventListener('change', measure)
+    }
+  }, [sharkRef, taglineRef, railRef, enabled])
+}
+
 /* Where the segment from the box's center toward (tx, ty) crosses its edge. */
 function edgePoint(b: Box, tx: number, ty: number): [number, number] {
   const cx = b.x + b.w / 2
@@ -375,6 +435,8 @@ function App() {
   const [leaving, setLeaving] = useState<Page | null>(null)
   const sharkRef = useRef<HTMLDivElement>(null)
   const carrierRef = useRef<HTMLDivElement>(null)
+  const taglineRef = useRef<HTMLParagraphElement>(null)
+  const railRef = useRef<HTMLElement>(null)
 
   const go = (to: Page) => {
     if (to === page || leaving) return
@@ -393,6 +455,7 @@ function App() {
   const shown = leaving ?? page
 
   useSharkDrag(sharkRef, carrierRef, shown === 'home')
+  useParkedShark(sharkRef, taglineRef, railRef, shown === 'home')
 
   return (
     <div id="page">
@@ -454,7 +517,9 @@ function App() {
           </div>
           <p className="greeting">hi, i&rsquo;m</p>
           <CvTracker sharkRef={sharkRef} />
-          <p className="tagline">cs @ uf, backend software engineer</p>
+          <p className="tagline" ref={taglineRef}>
+            cs @ uf, backend software engineer
+          </p>
         </main>
       ) : (
         <main id="about" className={leaving ? 'leaving' : undefined}>
@@ -477,7 +542,7 @@ function App() {
         </main>
       )}
 
-      <aside id="social-rail">
+      <aside id="social-rail" ref={railRef}>
         {socials.map((s) => (
           <a
             key={s.name}

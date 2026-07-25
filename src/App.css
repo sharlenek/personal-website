@@ -755,12 +755,16 @@
     white-space: normal;
   }
 
+  /* Parked, not orbiting: the shark sits centered in the gap between the
+     tagline and the social row. --shark-parked-y is measured onto the element by
+     useParkedShark in App.tsx; the fallback is roughly that spot for the frame
+     before the first measurement lands. */
   .shark {
     animation: none;
-    top: auto;
+    top: var(--shark-parked-y, 82%);
     left: 50%;
-    bottom: 6%;
+    bottom: auto;
     background-image: var(--frame-a);
-    transform: translate(-50%, 0);
+    transform: translate(-50%, -50%);
   }
 }
