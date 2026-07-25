@@ -54,9 +54,24 @@ const socials = [
    in sync with the .cv-overlay media query in App.css. */
 const CV_QUERY = '(min-width: 901px) and (hover: hover)'
 
-/* How often the boxes resample the layout, in ms — roughly 8 detections/sec.
-   Low enough that each update is a visible jump, not a smooth follow. */
-const DETECT_MS = 60
+/* The box's position updates every frame; only its size is re-measured on this
+   interval, in ms. SHAPE_MIX is how much of the shark's true rotated bounds the
+   box takes on — a few percent, so the size ticks by a pixel or two and never
+   balloons. */
+const RESHAPE_MS = 500
+const SHAPE_MIX = 0.1
+
+/* The label's class name waffles between a partial read and a confident one.
+   Both strings are 5 glyphs in a monospace face, so the label never reflows.
+   Ranges in ms — how long "shark" holds, then how long "shar?" holds. */
+const LABEL_SURE: [number, number] = [8000, 10000]
+const LABEL_UNSURE: [number, number] = [340, 800]
+
+/* Confidence shown while the class name reads "shar?" — re-rolled in this
+   inclusive range every time the label goes unsure. */
+const LABEL_DROP: [number, number] = [70, 80]
+
+const rand = ([min, max]: [number, number]) => min + Math.random() * (max - min)
 
 /* Glide-home tuning: ms per pixel of drag distance, clamped to this range. */
 const GLIDE_PER_PX = 5
@@ -195,6 +210,7 @@ function CvTracker({ sharkRef }: { sharkRef: React.RefObject<HTMLDivElement | nu
   const lineRef = useRef<SVGLineElement>(null)
   const dotRef = useRef<SVGCircleElement>(null)
   const confRef = useRef<HTMLSpanElement>(null)
+  const classRef = useRef<HTMLSpanElement>(null)
 
   useEffect(() => {
     const mq = window.matchMedia(CV_QUERY)
@@ -207,13 +223,13 @@ function CvTracker({ sharkRef }: { sharkRef: React.RefObject<HTMLDivElement | nu
       el.style.height = `${b.h}px`
     }
 
-    let last = 0
+    // Held between reshape ticks so the box keeps one size while it glides.
+    let boxW = 0
+    let boxH = 0
+    let shapedAt = 0
+
     const tick = (now: number) => {
       frame = requestAnimationFrame(tick)
-      // Resample on a fixed detection tick rather than every frame, so the box
-      // snaps between sizes like a detector re-running instead of easing.
-      if (now - last < DETECT_MS) return
-      last = now
 
       const root = rootRef.current
       const shark = sharkRef.current
@@ -224,20 +240,29 @@ function CvTracker({ sharkRef }: { sharkRef: React.RefObject<HTMLDivElement | nu
       const s = shark.getBoundingClientRect()
       const t = target.getBoundingClientRect()
 
-      // Size comes from the shark's untransformed layout box, not its rotated
-      // client rect: the rect swells as the sprite turns (widest near 45deg),
-      // and the layout box is exactly the smallest size that rect ever reaches
-      // — at rotate(0). So the box holds one size and only ever moves. The
-      // sprite art has transparent margins, so inset a little to hug the shark
-      // instead of its bitmap.
+      // The sprite art has transparent margins, so inset a little to hug the
+      // shark instead of its bitmap.
       const pad = 0.08
-      const w = shark.offsetWidth * (1 - pad * 2)
-      const h = shark.offsetHeight * (1 - pad * 2)
+
+      // Position follows every frame, so the box glides. Size is resampled only
+      // on the reshape tick, and even then it barely moves: the floor is the
+      // shark's untransformed layout box (exactly what its client rect measures
+      // at rotate(0), the smallest it ever gets), and SHAPE_MIX admits only a
+      // sliver of the swell the rect picks up as the sprite turns. Rounding to
+      // whole pixels keeps each change a crisp step rather than a slow creep.
+      if (now - shapedAt >= RESHAPE_MS || !boxW) {
+        shapedAt = now
+        const minW = shark.offsetWidth * (1 - pad * 2)
+        const minH = shark.offsetHeight * (1 - pad * 2)
+        boxW = Math.round(minW + (s.width * (1 - pad * 2) - minW) * SHAPE_MIX)
+        boxH = Math.round(minH + (s.height * (1 - pad * 2) - minH) * SHAPE_MIX)
+      }
+
       const sharkBox: Box = {
-        x: s.left - o.left + s.width / 2 - w / 2,
-        y: s.top - o.top + s.height / 2 - h / 2,
-        w,
-        h,
+        x: s.left - o.left + s.width / 2 - boxW / 2,
+        y: s.top - o.top + s.height / 2 - boxH / 2,
+        w: boxW,
+        h: boxH,
       }
       const titleBox: Box = {
         x: t.left - o.left - 6,
@@ -266,12 +291,35 @@ function CvTracker({ sharkRef }: { sharkRef: React.RefObject<HTMLDivElement | nu
     }
 
     // Confidence drifts around 96 in small steps rather than jumping at random,
-    // so it reads as a detector settling instead of noise.
+    // so it reads as a detector settling instead of noise. While the class name
+    // is unsure the drift keeps running underneath but LABEL_DROP is shown, so
+    // the number the detector recovers to isn't the one it left on.
     let conf = 96
+    let unsure = false
+    let drop = rand(LABEL_DROP)
+    const paintConf = () => {
+      if (confRef.current) confRef.current.textContent = `${(unsure ? drop : conf).toFixed(1)}%`
+    }
     const sample = window.setInterval(() => {
-      conf = Math.min(98, Math.max(92, conf + Math.round((Math.random() - 0.5) * 5)))
-      if (confRef.current) confRef.current.textContent = `${conf}%`
-    }, 1200)
+      conf = Math.min(98, Math.max(92, conf + (Math.random() - 0.5) * 3))
+      paintConf()
+    }, 3600)
+
+    // Self-rescheduling rather than a fixed interval: the unsure state is a
+    // short blip and the sure state a long hold, and both are jittered so the
+    // flicker never lands on a beat.
+    let flick = 0
+    const waffle = () => {
+      const el = classRef.current
+      if (!el) return
+      unsure = !unsure
+      // Fresh number on each dip, so repeated flickers don't all read alike.
+      if (unsure) drop = rand(LABEL_DROP)
+      el.textContent = unsure ? 'shar?' : 'shark'
+      paintConf()
+      flick = window.setTimeout(waffle, rand(unsure ? LABEL_UNSURE : LABEL_SURE))
+    }
+    flick = window.setTimeout(waffle, rand(LABEL_SURE))
 
     const sync = () => {
       cancelAnimationFrame(frame)
@@ -283,6 +331,7 @@ function CvTracker({ sharkRef }: { sharkRef: React.RefObject<HTMLDivElement | nu
     return () => {
       cancelAnimationFrame(frame)
       window.clearInterval(sample)
+      window.clearTimeout(flick)
       mq.removeEventListener('change', sync)
     }
   }, [sharkRef])
@@ -305,7 +354,7 @@ function CvTracker({ sharkRef }: { sharkRef: React.RefObject<HTMLDivElement | nu
           <i className="cv-corner bl" />
           <i className="cv-corner br" />
           <div className="cv-label">
-            shark?: <span ref={confRef}>96%</span>
+            <span ref={classRef}>shark</span>: <span ref={confRef}>96%</span>
           </div>
         </div>
 

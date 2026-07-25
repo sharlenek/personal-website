@@ -559,7 +559,9 @@
 
 .cv-label {
   position: absolute;
-  bottom: calc(100% + 5px);
+  /* Percentages resolve against the padding box, so the +1px clears the box's
+     own top border and the label sits flush on it with no gap and no overlap. */
+  bottom: calc(100% + 1px);
   left: -1px;
   padding: 2px 6px;
   white-space: nowrap;
