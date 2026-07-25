@@ -400,6 +400,216 @@
   pointer-events: none;
 }
 
+/* ---- computer-vision tracking overlay (desktop only) --------------------- */
+
+/* Boxes and link fade in once the shark has finished entering and settled into
+   its orbit (shark-enter ends at 1.9s). */
+@keyframes cv-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* A detector re-locking, not a glitch: two short dips per cycle, shallow. */
+@keyframes cv-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  38%,
+  40.5% {
+    opacity: 1;
+  }
+  39% {
+    opacity: 0.62;
+  }
+  71%,
+  73.5% {
+    opacity: 1;
+  }
+  72% {
+    opacity: 0.78;
+  }
+}
+
+/* Data-refresh sweep across the label. */
+@keyframes cv-refresh {
+  0%,
+  62% {
+    transform: translateY(-110%);
+    opacity: 0;
+  }
+  66% {
+    opacity: 0.9;
+  }
+  78%,
+  100% {
+    transform: translateY(110%);
+    opacity: 0;
+  }
+}
+
+@keyframes cv-dash {
+  to {
+    stroke-dashoffset: -16;
+  }
+}
+
+.cv-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  font-family: var(--mono);
+  /* Fallback for reduced motion, where cv-in never runs. */
+  opacity: 1;
+}
+
+.cv-link {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.cv-line {
+  stroke: var(--accent);
+  stroke-width: 1;
+  stroke-dasharray: 5 4;
+  opacity: 0.5;
+}
+
+.cv-dot {
+  fill: var(--accent);
+  opacity: 0.65;
+}
+
+.cv-box {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
+  will-change: transform, width, height;
+}
+
+.cv-corner {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid var(--accent);
+
+  &.tl {
+    top: -1px;
+    left: -1px;
+    border-right: 0;
+    border-bottom: 0;
+  }
+
+  &.tr {
+    top: -1px;
+    right: -1px;
+    border-left: 0;
+    border-bottom: 0;
+  }
+
+  &.bl {
+    bottom: -1px;
+    left: -1px;
+    border-right: 0;
+    border-top: 0;
+  }
+
+  &.br {
+    bottom: -1px;
+    right: -1px;
+    border-left: 0;
+    border-top: 0;
+  }
+}
+
+.cv-box--title {
+  border-style: dashed;
+
+  .cv-corner {
+    width: 7px;
+    height: 7px;
+    opacity: 0.75;
+  }
+}
+
+.cv-label {
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: -1px;
+  padding: 2px 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: var(--accent);
+
+  /* the sweep */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      rgba(255, 255, 255, 0.55),
+      transparent
+    );
+  }
+
+  span {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cv-overlay {
+    animation: cv-in 0.8s ease-out 2s both;
+  }
+
+  .cv-line {
+    animation: cv-dash 1.6s linear infinite;
+  }
+
+  .cv-label,
+  .cv-corner {
+    animation: cv-flicker 5.5s steps(1, end) infinite;
+  }
+
+  /* Offset so the brackets and the label don't blink in lockstep. */
+  .cv-corner {
+    animation-duration: 7.3s;
+    animation-delay: -2.4s;
+  }
+
+  .cv-label::after {
+    animation: cv-refresh 4.2s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cv-label::after {
+    display: none;
+  }
+}
+
+/* Tablet and mobile get no tracking overlay at all. */
+@media (max-width: 900px), (hover: none) {
+  .cv-overlay {
+    display: none;
+  }
+}
+
 #about {
   flex: 1;
   min-height: 0;
