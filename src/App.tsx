@@ -414,7 +414,7 @@ function CvTracker({ sharkRef }: { sharkRef: React.RefObject<HTMLDivElement | nu
           <i className="cv-corner bl" />
           <i className="cv-corner br" />
           <div className="cv-label">
-            <span ref={classRef}>shark</span>: <span ref={confRef}>96%</span>
+            <span ref={classRef}>shark</span>: <span ref={confRef}>96.0%</span>
           </div>
         </div>
 

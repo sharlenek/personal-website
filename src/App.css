@@ -69,6 +69,20 @@
   }
 }
 
+/* Mobile's counterpart to shark-enter: the shark is parked rather than orbiting,
+   so it just rises into its spot. Kept in sync with the parked transform in the
+   max-width: 640px block. */
+@keyframes shark-park-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) translate(0, 24px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
 @keyframes shark-orbit {
   /* bottom of the ellipse, swimming right: level */
   0% {
@@ -759,5 +773,11 @@
     bottom: auto;
     background-image: var(--frame-a);
     transform: translate(-50%, -50%);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .shark {
+      animation: shark-park-in 0.9s ease-out 1s both;
+    }
   }
 }
