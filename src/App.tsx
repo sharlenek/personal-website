@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import sharkUp from './assets/sharkup.webp'
 import sharkDown from './assets/sharkdown.webp'
-import headshot from './assets/sharlene_headshot_compressed.jpg'
+import headshot from './assets/headshot.webp'
 import './App.css'
 
 type Page = 'home' | 'about'
